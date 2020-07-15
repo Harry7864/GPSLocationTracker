@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/splash_back" >
+
+
+    <ImageView
+        android:id="@+id/imgloc"
+        android:layout_width="@dimen/_60sdp"
+        android:layout_height="@dimen/_60sdp"
+        android:layout_marginBottom="10dp"
+        android:tint="@color/white"
+        android:src="@drawable/ic_gps"
+        android:gravity="center"
+        android:layout_centerInParent="true" />
+
+    <TextView
+        android:layout_below="@+id/imgloc"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_marginBottom="10dp"
+        android:gravity="center"
+        android:text="GPSTracker"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_35ssp"
+        android:textStyle="bold" />
+
+</RelativeLayout>

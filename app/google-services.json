@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "234778282054",
+    "firebase_url": "https://gpslocationtracker-850a2.firebaseio.com",
+    "project_id": "gpslocationtracker-850a2",
+    "storage_bucket": "gpslocationtracker-850a2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:234778282054:android:feb3a1ed0c8ee7f518a247",
+        "android_client_info": {
+          "package_name": "com.example.gpslocationtracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "234778282054-da814g7s8d73roqkkapv44ufiia2kvbs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD71ojhFYXre4PDGGb33Gf33IMk_bwdni0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "234778282054-da814g7s8d73roqkkapv44ufiia2kvbs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

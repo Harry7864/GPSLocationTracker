@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="activity_margin">16dp</dimen>
+    <dimen name="indicator_size">8dp</dimen>
+    <dimen name="section_image_item">128dp</dimen>
+    <dimen name="activityPadding">16dp</dimen>
+    <dimen name="placeholderImage">60dp</dimen>
+    <dimen name="placeholderTextHeight">8dp</dimen>
+    <dimen name="padding_10">10dp</dimen>
+
+    <dimen name="global_padding">8dp</dimen>
+
+    <dimen name="player_base_height">220dp</dimen>
+
+    <dimen name="player_controller_base_height">40dp</dimen>
+
+
+    <dimen name="card_insets">8dp</dimen>
+</resources>
