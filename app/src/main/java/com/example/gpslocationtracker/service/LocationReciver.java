@@ -89,18 +89,18 @@ public class LocationReciver extends BroadcastReceiver {
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context);
 
+//        if (fusedLocationProviderClient != null) {
+//            fusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
+//        }
 
+        locationRequest = new LocationRequest();
+        locationRequest.setInterval(120000); // two minute interval
+        locationRequest.setFastestInterval(120000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        Toast.makeText(context, "Service start", Toast.LENGTH_SHORT).show();
 
-        locationRequest = LocationRequest.create();
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setInterval(1000);
-        locationRequest.setSmallestDisplacement(5.0f);
-        locationRequest.setFastestInterval(10000);
-        locationRequest.setInterval(1000);
 
         requestLocationUpdate();
-
-        
 
 
         if (cdate.equalsIgnoreCase(pdate)) {
@@ -110,7 +110,10 @@ public class LocationReciver extends BroadcastReceiver {
 
 
     }
+
     private void requestLocationUpdate() {
+
+
         Toast.makeText(context, "Service start", Toast.LENGTH_SHORT).show();
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED &&
@@ -122,21 +125,19 @@ public class LocationReciver extends BroadcastReceiver {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onSuccess(Location location) {
-//               updateLocation(location);
+                updateLocation(location);
             }
         });
 
-        fusedLocationProviderClient.requestLocationUpdates(locationRequest,new LocationCallback() {
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest, new LocationCallback() {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
                 updateLocation(locationResult.getLastLocation());
             }
-        },Looper.myLooper());
+        }, Looper.myLooper());
     }
-
-
 
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -211,8 +212,8 @@ public class LocationReciver extends BroadcastReceiver {
 
             try {
 
-                Log.e("## Data On Server :", prefrenceManager.getRegistredUSerID()+" "+
-                        address+" "+ area);
+                Log.e("## Data On Server :", prefrenceManager.getRegistredUSerID() + " " +
+                        address + " " + area);
 
                 restCall = RestClient.createService(RestCall.class, VariableBag.BASE_URL);
                 restCall.getLatLong(
@@ -228,14 +229,14 @@ public class LocationReciver extends BroadcastReceiver {
 
                             @Override
                             public void onError(Throwable e) {
-                                Log.d("Location call Error",e.getLocalizedMessage());
+                                Log.d("Location call Error", e.getLocalizedMessage());
 //                                notificationManager.cancel(0);
                             }
 
                             @Override
 
                             public void onNext(final CommonResponce CommonResponce) {
-                                Log.d("Location Updated  ",CommonResponce.getMessage());
+                                Log.d("Location Updated  ", CommonResponce.getMessage());
 //                                notificationManager.cancel(0);
                             }
                         });
@@ -247,7 +248,6 @@ public class LocationReciver extends BroadcastReceiver {
             Toast.makeText(context, "Service Error...", Toast.LENGTH_SHORT).show();
         }
     }
-
 
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
