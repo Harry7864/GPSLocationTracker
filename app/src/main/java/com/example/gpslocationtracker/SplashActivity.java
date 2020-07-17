@@ -16,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.example.gpslocationtracker.utility.PreferenceManager;
+import com.nabinbhandari.android.permissions.PermissionHandler;
+import com.nabinbhandari.android.permissions.Permissions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,12 +30,41 @@ public class SplashActivity extends AppCompatActivity {
     PreferenceManager preferenceManager;
     private static final int REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS = 5;
 
+    String[] permissions = {
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.CAMERA,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
+    String rationale = "Please provide Some permission so that you can use it...";
+    Permissions.Options options;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
         preferenceManager = new PreferenceManager(this);
-        checkPermission();
+        options = new Permissions.Options()
+                .setRationaleDialogTitle("Info")
+                .setSettingsDialogTitle("Warning");
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Permissions.check(SplashActivity.this, permissions, rationale, options, new PermissionHandler() {
+                    @Override
+                    public void onGranted() {
+                        if (preferenceManager.getLoginSession()) {
+                            startActivity(new Intent(SplashActivity.this, InOutActivity.class));
+                            finish();
+                        } else {
+                            startActivity(new Intent(SplashActivity.this, LoginActivity.class));
+                            finish();
+                        }
+                    }
+                });
+            }
+        },3000);
+
     }
 
     private void checkPermission() {
@@ -53,6 +84,10 @@ public class SplashActivity extends AppCompatActivity {
                 permissionsNeeded.add("Access Fine Location");
             }if (!addPermission(permissionsList, Manifest.permission.ACCESS_COARSE_LOCATION)) {
                 permissionsNeeded.add("Access Coarse Location");
+            }if (!addPermission(permissionsList, Manifest.permission.REQUEST_COMPANION_RUN_IN_BACKGROUND)) {
+                permissionsNeeded.add("COMPANION_RUN_IN");
+            }if (!addPermission(permissionsList, Manifest.permission.REQUEST_COMPANION_USE_DATA_IN_BACKGROUND)) {
+                permissionsNeeded.add("COMPANION_USE_DATA");
             }
             if (permissionsList.size() > 0)
             {
@@ -64,7 +99,7 @@ public class SplashActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         if (preferenceManager.getLoginSession()) {
-                            startActivity(new Intent(SplashActivity.this, MainActivity.class));
+                            startActivity(new Intent(SplashActivity.this, InOutActivity.class));
                             finish();
                         } else {
                             startActivity(new Intent(SplashActivity.this, LoginActivity.class));
@@ -103,6 +138,12 @@ public class SplashActivity extends AppCompatActivity {
                 perms.put(Manifest.permission.CAMERA, PackageManager.PERMISSION_GRANTED);
                 perms.put(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
                 perms.put(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+
+                    perms.put(Manifest.permission.REQUEST_COMPANION_RUN_IN_BACKGROUND, PackageManager.PERMISSION_GRANTED);
+                    perms.put(Manifest.permission.REQUEST_COMPANION_USE_DATA_IN_BACKGROUND, PackageManager.PERMISSION_GRANTED);
+
+                }
 
                 // Fill with results
                 for (int i = 0; i < permissions.length; i++)
@@ -111,13 +152,16 @@ public class SplashActivity extends AppCompatActivity {
                         && perms.get(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
                         && perms.get(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
                         && perms.get(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                        && perms.get(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        && perms.get(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+                        || perms.get(Manifest.permission.REQUEST_COMPANION_RUN_IN_BACKGROUND) == PackageManager.PERMISSION_GRANTED
+                        || perms.get(Manifest.permission.REQUEST_COMPANION_USE_DATA_IN_BACKGROUND) == PackageManager.PERMISSION_GRANTED) {
                     // All Permissions Granted
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
                             if (preferenceManager.getLoginSession()) {
-                                startActivity(new Intent(SplashActivity.this, MainActivity.class));
+                                startActivity(new Intent(SplashActivity.this, InOutActivity.class));
                                 finish();
                             } else {
                                 startActivity(new Intent(SplashActivity.this, LoginActivity.class));

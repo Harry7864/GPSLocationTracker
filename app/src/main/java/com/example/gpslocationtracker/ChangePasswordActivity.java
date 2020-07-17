@@ -112,7 +112,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
             confpassError.setErrorEnabled(false);
         }
 
-        if (isotpnoValid && isConfPasswordValid && isConfPasswordValid) {
+        if (isotpnoValid && isPasswordValid && isConfPasswordValid) {
             callNetwork();
         }
 

@@ -84,8 +84,7 @@ dependencies {
     implementation('com.mikepenz:aboutlibraries:6.0.9@aar') {
         transitive = true
     }
-
+    implementation 'com.nabinbhandari.android:permissions:3.8'
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.5.4'
     releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
-
 }
