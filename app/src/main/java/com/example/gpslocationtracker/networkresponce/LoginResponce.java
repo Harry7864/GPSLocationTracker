@@ -22,6 +22,9 @@ public class LoginResponce {
     @SerializedName("role_id")
     @Expose
     private String role_id;
+    @SerializedName("duration")
+    @Expose
+    private String duration ;
     @SerializedName("message")
     @Expose
     private String message;
@@ -79,6 +82,14 @@ public class LoginResponce {
 
     public String getMessage() {
         return message;
+    }
+
+    public String getDuration() {
+        return duration;
+    }
+
+    public void setDuration(String duration) {
+        this.duration = duration;
     }
 
     public void setMessage(String message) {

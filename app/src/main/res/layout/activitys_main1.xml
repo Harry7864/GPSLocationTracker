@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_40sdp"
+        android:orientation="horizontal"
+        android:background="@color/colorPrimary">
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Welcome"
+            android:textStyle="bold"
+            android:layout_centerHorizontal="true"
+            android:gravity="center"
+            android:textSize="@dimen/_14ssp"
+            android:textColor="@color/white"
+            />
+        <ImageView
+            android:id="@+id/ivLogout"
+            android:layout_width="@dimen/_25sdp"
+            android:layout_height="@dimen/_25sdp"
+            android:layout_marginStart="@dimen/_50sdp"
+            android:layout_marginEnd="@dimen/_10sdp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:src="@drawable/ic_signout_24"
+            android:layout_gravity="end|center"
+            android:tint="@color/white" />
+
+    </RelativeLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/_5sdp"
+        android:layout_marginStart="@dimen/_5sdp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Last update"
+            android:textColor="@color/grey_60"
+            android:textSize="@dimen/_12ssp"
+            />
+
+        <TextView
+            android:id="@+id/tv_last_update"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Never"
+
+            android:textSize="@dimen/_12ssp"
+            style="@style/TextAppearance.AppCompat.Body1"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:textSize="@dimen/_12ssp"
+            android:text="Current location"
+            android:textColor="@color/grey_60"
+            />
+
+        <TextView
+            android:id="@+id/tv_current_location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Not available"
+            android:textSize="@dimen/_12ssp"
+            android:layout_marginTop="@dimen/_10sdp"
+            style="@style/TextAppearance.AppCompat.Body1"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:text="Current address"
+            android:textSize="@dimen/_12ssp"
+            android:textColor="@color/grey_60" />
+
+        <TextView
+            android:id="@+id/tv_current_address"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Not available"
+            android:textSize="@dimen/_12ssp"
+            style="@style/TextAppearance.AppCompat.Body1"/>
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="@dimen/_5sdp"
+        android:layout_marginLeft="@dimen/_50sdp"
+        android:layout_marginRight="@dimen/_50sdp"
+        android:layout_marginTop="@dimen/_25sdp"
+        android:weightSum="2">
+        <Button
+            android:id="@+id/btnIn"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:layout_margin="@dimen/_5sdp"
+            android:background="@drawable/bg_gradient_primary_capsule_button"
+            android:text="IN"
+
+            android:textColor="@android:color/white"
+            android:textSize="16sp" />
+        <Button
+            android:visibility="gone"
+            android:id="@+id/btnOut"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_margin="@dimen/_5sdp"
+            android:background="@drawable/bg_gradient_primary_capsule_button"
+            android:text="OUT"
+            android:textColor="@android:color/white"
+            android:textSize="16sp" />
+    </LinearLayout>
+</LinearLayout>

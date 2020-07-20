@@ -1,5 +1,7 @@
 package com.example.gpslocationtracker;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
@@ -45,6 +47,7 @@ import com.example.gpslocationtracker.utility.InternetConnection;
 import com.example.gpslocationtracker.utility.PreferenceManager;
 import com.example.gpslocationtracker.utility.Tools;
 import com.example.gpslocationtracker.utility.VariableBag;
+import com.getlocationbackground.util.Util;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -60,6 +63,7 @@ import com.patloew.rxlocation.RxLocation;
 
 import java.io.IOException;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -99,6 +103,7 @@ public class InOutActivity extends AppCompatActivity implements ConnectivityList
     boolean mBound = false;
     private long interval;
     String currentLat = "", currentLangi = "", currentAddress = "";
+
 
     FusedLocationProviderClient fusedLocationProviderClient;
     LocationRequest locationRequest;
@@ -186,26 +191,8 @@ public class InOutActivity extends AppCompatActivity implements ConnectivityList
 
     private void init() {
 
-        Intent intent = new Intent(getApplicationContext(), LocationReciver.class);
-        intent.setAction("com.example.backgroundproccessdemo.ACTION");
-        final PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(),
-                0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-
-        final Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        final AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-
-        if (alarm != null) {
-            Log.e("##", "alaram cancel");
-            alarm.cancel(pendingIntent);
-        }
-        if (alarm != null) {
-            Log.e("##", "Set alarm");
-            alarm.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), interval, pendingIntent);
-        }
     }
-
     private void SendLocation() {
         getCurrentLocation(InOutActivity.this);
     }

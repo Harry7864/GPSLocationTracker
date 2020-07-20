@@ -214,7 +214,6 @@ public class LocationReciver extends BroadcastReceiver {
 
                 Log.e("## Data On Server :", prefrenceManager.getRegistredUSerID() + " " +
                         address + " " + area);
-
                 restCall = RestClient.createService(RestCall.class, VariableBag.BASE_URL);
                 restCall.getLatLong(
                         prefrenceManager.getKeyValueString("user_location"),

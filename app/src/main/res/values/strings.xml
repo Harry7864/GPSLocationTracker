@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GPSLocationTracker</string>
+    <string name="app_name">GPS Tracker</string>
     <string name="server_client_id">123</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_mobile">Mobile Number</string>
@@ -25,10 +25,17 @@
     <string name="error_invalid_confirmpass">Password is not matching</string>
     <string name="password_error">Please enter a proper password</string>
     <string name="password_con_error">Please enter a proper confirm password</string>
-    <string name="error_invalid_password">Please enter a minimum password of 6 characters</string>
+    <string name="error_invalid_password">Please enter a minimum password of 5 characters</string>
     <string name="otp_title">Please enter the 4 digit verification code</string>
     <string name="otp_button_text">VERIFY</string>
     <string name="resend_msg">Didn’t receive the OTP?</string>
     <string name="resend_again_msg">Resend again</string>
     <string name="sent_to_91_xxxx_xxx">sent to +91 </string>
+
+    <string name="service_already_running">Service is already running</string>
+    <string name="service_start_successfully">You are  successfully in</string>
+    <string name="service_stop_successfully">You are  successfully out</string>
+    <string name="gps_enable">GPS enable</string>
+    <string name="please_turn_on_gps">Please turn on GPS</string>
+    <string name="ok">Ok</string>
 </resources>

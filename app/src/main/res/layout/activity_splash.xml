@@ -22,7 +22,7 @@
         android:layout_centerInParent="true"
         android:layout_marginBottom="10dp"
         android:gravity="center"
-        android:text="GPSTracker"
+        android:text="GPS Tracker"
         android:textColor="@color/white"
         android:textSize="@dimen/_35ssp"
         android:textStyle="bold" />

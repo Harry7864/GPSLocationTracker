@@ -54,7 +54,7 @@ public class SplashActivity extends AppCompatActivity {
                     @Override
                     public void onGranted() {
                         if (preferenceManager.getLoginSession()) {
-                            startActivity(new Intent(SplashActivity.this, InOutActivity.class));
+                            startActivity(new Intent(SplashActivity.this, MainActivity1.class));
                             finish();
                         } else {
                             startActivity(new Intent(SplashActivity.this, LoginActivity.class));
@@ -99,7 +99,7 @@ public class SplashActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         if (preferenceManager.getLoginSession()) {
-                            startActivity(new Intent(SplashActivity.this, InOutActivity.class));
+                            startActivity(new Intent(SplashActivity.this, MainActivity1.class));
                             finish();
                         } else {
                             startActivity(new Intent(SplashActivity.this, LoginActivity.class));
@@ -161,7 +161,7 @@ public class SplashActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             if (preferenceManager.getLoginSession()) {
-                                startActivity(new Intent(SplashActivity.this, InOutActivity.class));
+                                startActivity(new Intent(SplashActivity.this, MainActivity1.class));
                                 finish();
                             } else {
                                 startActivity(new Intent(SplashActivity.this, LoginActivity.class));

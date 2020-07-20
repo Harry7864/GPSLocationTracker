@@ -157,11 +157,12 @@ public class LoginActivity extends AppCompatActivity {
                                 preferenceManager.setKeyValueString("mobile", loginResponce.getUser_mobile());
                                 preferenceManager.setKeyValueString("roleid", loginResponce.getRole_id());
                                 preferenceManager.setKeyValueString("user_profile_pick", loginResponce.getUser_profile());
+                                preferenceManager.setKeyValueString("duration", loginResponce.getDuration());
                                 preferenceManager.setKeyValueString("LocationTimeInterval", "1000");
 
                                 Tools.toast(LoginActivity.this, loginResponce.getMessage(), 2);
 
-                                Intent intent = new Intent(LoginActivity.this,InOutActivity .class);
+                                Intent intent = new Intent(LoginActivity.this,MainActivity1 .class);
                                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                 startActivity(intent);
                                 finish();
