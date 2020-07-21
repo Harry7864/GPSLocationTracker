@@ -14,6 +14,7 @@ import android.location.Location
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -24,6 +25,7 @@ import com.example.gpslocationtracker.utility.PreferenceManager
 import com.example.gpslocationtracker.utility.VariableBag
 import com.google.android.gms.location.*
 import rx.Subscriber
+import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import java.io.IOException
 import java.util.*
@@ -35,12 +37,13 @@ class LocationService : Service() {
     internal var address: String? = null
     internal var area: String? = null
     internal var locality: String? = null
-    var BASE_URL: String? = "https://gps.fincasys.in/api/"
+
+
     internal var restCall: RestCall? = null
-    internal var duration: String? = null
+    var duration: Long = 0
     private val TAG = "LocationService"
-    private lateinit var preferenceManager: PreferenceManager
-    var prefrenceManager: PreferenceManager? = null
+    lateinit var preferenceManager: PreferenceManager
+
 
     override fun onCreate() {
         super.onCreate()
@@ -49,8 +52,13 @@ class LocationService : Service() {
                 Notification()
         )
 
-        preferenceManager = PreferenceManager(this)
-        duration = prefrenceManager?.getKeyValueString("duration")
+        preferenceManager = PreferenceManager(applicationContext)
+        val durations = preferenceManager!!.getKeyValueString("duration")
+        if (durations != "") {
+            duration = durations!!.toLong()
+        } else {
+            duration = 1
+        }
 
         requestLocationUpdates()
 
@@ -86,6 +94,43 @@ class LocationService : Service() {
         return START_STICKY
     }
 
+    private fun uploadData() {
+        var userStatus = preferenceManager.getKeyValueString("UserStatus")
+        if (userStatus.equals("USERIN")) {
+            restCall = RestClient.createService(RestCall::class.java, VariableBag.BASE_URL)
+            restCall!!.getLatLong(
+                    "user_location",
+                    preferenceManager.registredUSerID,
+                    address, area, locality, latitude.toString(), longitude.toString())
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(object : Subscriber<CommonResponce>() {
+                        override fun onError(e: Throwable?) {
+                            Toast.makeText(
+                                    this@LocationService,
+                                    e!!.message + "",
+                                    Toast.LENGTH_SHORT
+                            ).show()
+
+                        }
+
+                        override fun onNext(t: CommonResponce?) {
+                            Toast.makeText(
+                                    this@LocationService,
+                                    t!!.message + "",
+                                    Toast.LENGTH_SHORT
+                            ).show()
+
+                        }
+
+                        override fun onCompleted() {
+                        }
+
+                    });
+
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         stoptimertask()
@@ -110,37 +155,14 @@ class LocationService : Service() {
                             latitude.toString() + ":::" + longitude.toString() + "Count" +
                                     count.toString())
                     address = getAddress(latitude, longitude)
-                    if (preferenceManager.getKeyValueString("UserStatus").equals("USERIN")) {
-                        restCall = RestClient.createService(RestCall::class.java, VariableBag.BASE_URL)
-                        restCall!!.getLatLong(
-                                "user_location",
-                                preferenceManager.registredUSerID,
-                                address, "Ahmedabad", "Bodakdev", latitude.toString(), longitude.toString())
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(Schedulers.newThread())
-                                .subscribe(object : Subscriber<CommonResponce?>() {
-                                    override fun onCompleted() {}
-                                    override fun onError(e: Throwable) {
-                                        Log.d("Location call Error", e.localizedMessage)
-                                        //                                notificationManager.cancel(0);
-                                    }
-
-
-                                    override fun onNext(t: CommonResponce?) {
-                                        TODO("Not yet implemented")
-                                        Log.d("Location Updated  ", t?.message)
-                                        //                                notificationManager.cancel(0);
-                                    }
-                                })
-                    }
-
+                    uploadData()
                 }
             }
         }
         timer!!.schedule(
                 timerTask,
                 0,
-                2000
+                duration * 1000 * 60
         ) //1 * 60 * 1000 1 minute
     }
 

@@ -4,51 +4,54 @@ package com.example.gpslocationtracker;
 import android.Manifest
 import android.annotation.TargetApi
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.location.Address
-import android.location.Geocoder
 import android.location.Location
-import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.provider.Settings
 import android.text.Html
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
+import com.example.gpslocationtracker.network.RestCall
+import com.example.gpslocationtracker.network.RestClient
+import com.example.gpslocationtracker.networkresponce.CommonResponce
 import com.example.gpslocationtracker.utility.PreferenceManager
+import com.example.gpslocationtracker.utility.VariableBag
 import com.getlocationbackground.util.Util
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
+import com.google.android.material.snackbar.Snackbar
+import com.patloew.rxlocation.RxLocation
 import kotlinx.android.synthetic.main.activitys_main1.*
-import java.io.IOException
+import rx.Subscriber
+import rx.android.schedulers.AndroidSchedulers
+import rx.schedulers.Schedulers
 import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.*
+import java.util.concurrent.TimeUnit
 
-class MainActivity1 : AppCompatActivity() {
+class MainActivity1 : AppCompatActivity(), MainView {
     var mLocationService: LocationService = LocationService()
     lateinit var mServiceIntent: Intent
     lateinit var mActivity: Activity
-    lateinit var currentLat: String
+    var fullAddress: String = ""
     lateinit var locationText: TextView
+    lateinit var tvTitle: TextView
     lateinit var addressText: TextView
     lateinit var lastUpdate: TextView
     lateinit var btnIn: Button
     lateinit var btnOut: Button
-    lateinit var userStatus: String
-    lateinit var btnStatus: String
-    lateinit var currentDateTimeString: String
+
 
     lateinit var currentLongi: String
     lateinit var currentAddress: String
@@ -58,18 +61,37 @@ class MainActivity1 : AppCompatActivity() {
     private lateinit var preferenceManager: PreferenceManager
     var fusedLocationProviderClient: FusedLocationProviderClient? = null
     var locationRequest: LocationRequest? = null
+
+    var latitude: String = ""
+    var longitude: String = ""
+    internal var address: String? = null
+    internal var area: String? = null
+    internal var locality: String? = null
+
+    var BASE_URL: String? = "https://gps.fincasys.in/api/"
+    internal var restCall: RestCall? = null
+    private var rxLocation: RxLocation? = null
+    private var presenter: MainPresenter? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activitys_main1)
+
         preferenceManager = PreferenceManager(this)
-        currentDateTimeString = DateFormat.getDateTimeInstance().format(Date())
+
         mActivity = this@MainActivity1
+
+        rxLocation = RxLocation(this)
+        rxLocation!!.setDefaultTimeout(25, TimeUnit.SECONDS)
+        presenter = MainPresenter(rxLocation)
+        presenter!!.attachView(this);
         lastUpdate = findViewById<TextView>(R.id.tv_last_update)
         btnIn = findViewById<Button>(R.id.btnIn)
         btnOut = findViewById<Button>(R.id.btnOut)
+        tvTitle = findViewById<TextView>(R.id.tvTitle)
         locationText = findViewById<TextView>(R.id.tv_current_location)
         addressText = findViewById<TextView>(R.id.tv_current_address)
-        lastUpdate.text = currentDateTimeString
+
+        tvTitle.text = "Welcome - " + preferenceManager.getKeyValueString("fullname")
         if (!Util.isLocationEnabledOrNot(mActivity)) {
             Util.showAlertLocation(
                     mActivity,
@@ -81,26 +103,8 @@ class MainActivity1 : AppCompatActivity() {
             )
 
         }
-        else
-        {
-            SendLocation()
-        }
-
-        SendLocation()
 
         if (preferenceManager.getKeyValueString("btnStatus").equals("true")) {
-            mLocationService = LocationService()
-            mServiceIntent = Intent(this, mLocationService.javaClass)
-            userStatus = "USERIN";
-            preferenceManager.setKeyValueString("UserStatus", userStatus)
-            if (!Util.isMyServiceRunning(mLocationService.javaClass, mActivity)) {
-                startService(mServiceIntent)
-                Toast.makeText(
-                        mActivity,
-                        getString(R.string.service_start_successfully),
-                        Toast.LENGTH_SHORT
-                ).show()
-            }
             btnOut.visibility = View.VISIBLE
             btnIn.visibility = View.GONE
         } else if (preferenceManager.getKeyValueString("btnStatus").equals("false")) {
@@ -113,20 +117,18 @@ class MainActivity1 : AppCompatActivity() {
                 arrayOf<String>(Manifest.permission.ACCESS_FINE_LOCATION), 200
         )
 
-//        CheckLocation()
         btnIn.setOnClickListener {
-
             val builder = android.app.AlertDialog.Builder(this@MainActivity1, R.style.AlertDialogTheme)
             builder.setMessage("Do you want to In?")
                     .setCancelable(false)
                     .setPositiveButton(Html.fromHtml("<font color='#000000'>Yes</font>")) { dialog, id ->
-                        btnIn.visibility = View.GONE
                         btnOut.visibility = View.VISIBLE
+                        btnIn.visibility = View.GONE
                         preferenceManager.setKeyValueString("btnStatus", "true")
                         mLocationService = LocationService()
                         mServiceIntent = Intent(this, mLocationService.javaClass)
-                        userStatus = "USERIN";
-                        preferenceManager.setKeyValueString("UserStatus", userStatus)
+                        preferenceManager.setKeyValueString("UserStatus", "USERIN")
+                        UploadData();
                         if (!Util.isMyServiceRunning(mLocationService.javaClass, mActivity)) {
                             startService(mServiceIntent)
                             Toast.makeText(
@@ -149,7 +151,6 @@ class MainActivity1 : AppCompatActivity() {
 
         }
         btnOut.setOnClickListener {
-
             val builder = android.app.AlertDialog.Builder(this@MainActivity1, R.style.AlertDialogTheme)
             builder.setMessage("Are you sure you want to Out?")
                     .setCancelable(false)
@@ -157,24 +158,12 @@ class MainActivity1 : AppCompatActivity() {
                         btnOut.visibility = View.GONE
                         btnIn.visibility = View.VISIBLE
                         preferenceManager.setKeyValueString("btnStatus", "false")
-                        userStatus = "USEROUT"
-                        preferenceManager.setKeyValueString("UserStatus", userStatus)
+                        preferenceManager.setKeyValueString("UserStatus", "USEROUT")
                         Toast.makeText(
                                 mActivity,
                                 getString(R.string.service_stop_successfully),
                                 Toast.LENGTH_SHORT
                         ).show()
-                        mLocationService = LocationService()
-                        mServiceIntent = Intent(this, mLocationService.javaClass)
-
-                        if (!Util.isMyServiceRunning(mLocationService.javaClass, mActivity)) {
-                            startService(mServiceIntent)
-                            Toast.makeText(
-                                    mActivity,
-                                    getString(R.string.service_start_successfully),
-                                    Toast.LENGTH_SHORT
-                            ).show()
-                        }
                     }
                     .setNegativeButton(Html.fromHtml("<font color='#000000'>No</font>")) { dialog, id -> dialog.cancel() }
             val alert = builder.create()
@@ -188,15 +177,7 @@ class MainActivity1 : AppCompatActivity() {
                     .setPositiveButton(Html.fromHtml("<font color='#000000'>Yes</font>")) { dialog, id ->
                         preferenceManager.clearPrefrence()
                         preferenceManager.setLoginSessionFalse()
-                        userStatus = "USERLOGOUT"
-                        preferenceManager.setKeyValueString("UserStatus", userStatus)
-
                         mLocationService = LocationService()
-                        mServiceIntent = Intent(this, mLocationService.javaClass)
-
-                        if (!Util.isMyServiceRunning(mLocationService.javaClass, mActivity)) {
-                            startService(mServiceIntent)
-                        }
                         val intent = Intent(this@MainActivity1, LoginActivity::class.java)
                         startActivity(intent)
                         finish()
@@ -207,125 +188,37 @@ class MainActivity1 : AppCompatActivity() {
         }
     }
 
-    fun CheckLocation() {
-        val lm = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        var gps_enabled = false
-        var network_enabled = false
-        try {
-            gps_enabled = Objects.requireNonNull(lm).isProviderEnabled(LocationManager.GPS_PROVIDER)
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-        }
-        try {
-            network_enabled = Objects.requireNonNull(lm).isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-        }
-        if (!gps_enabled && !network_enabled) {
-            // notify user
-            AlertDialog.Builder(this)
-                    .setMessage("Location is Off1..")
-                    .setPositiveButton("Open Location Setting") { paramDialogInterface, paramInt ->
-                        try {
-                            startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                    }.setCancelable(false)
-                    .show()
-        }
-    }
+    private fun UploadData() {
+        restCall = RestClient.createService(RestCall::class.java, VariableBag.BASE_URL)
+        restCall!!.getLatLong(
+                "user_location",
+                preferenceManager.registredUSerID,
+                fullAddress, area, locality, latitude, longitude)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(object : Subscriber<CommonResponce>() {
+                    override fun onError(e: Throwable?) {
+                        Toast.makeText(
+                                this@MainActivity1,
+                                e!!.message + "",
+                                Toast.LENGTH_SHORT
+                        ).show()
 
-    private fun SendLocation() {
-        getCurrentLocation(this@MainActivity1)
-    }
-
-    private fun getCurrentLocation(context: Context) {
-        fusedLocationProviderClient = FusedLocationProviderClient(context)
-        locationRequest = LocationRequest()
-        locationRequest!!.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-        locationRequest!!.setFastestInterval(10000)
-        locationRequest!!.setInterval(1000)
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return
-        }
-        fusedLocationProviderClient!!.requestLocationUpdates(locationRequest, object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult) {
-                super.onLocationResult(locationResult)
-                location1 = locationResult.lastLocation
-                if (location1 != null) {
-                    currentLocation = location1
-                    if (currentLocation != null) {
-                        Handler().postDelayed({ updateLocation(currentLocation!!) }, 1000)
                     }
-                }
-                Log.e("##", "Location is set")
-            }
-        }, Looper.getMainLooper())
-        try {
-            if (currentLocation != null) {
-                Handler().postDelayed({ updateLocation(this!!.currentLocation!!) }, 1000)
-            }
 
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
-            Toast.makeText(context, "Location is not Getting...", Toast.LENGTH_SHORT).show()
-        }
-    }
+                    override fun onNext(t: CommonResponce?) {
+                        Toast.makeText(
+                                this@MainActivity1,
+                                t!!.message + "",
+                                Toast.LENGTH_SHORT
+                        ).show()
 
-    private fun updateLocation(llocation: Location) {
-        try {
-            currentLat = "" + llocation.latitude
-            currentLongi = "" + llocation.longitude
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
-        }
-        locationText.setText("Latitude:\t$currentLat  Longitude:\t$currentLongi")
-        try {
-            try {
-                currentAddress = this!!.getAddress(llocation)!!
-            } catch (e: java.lang.Exception) {
-                e.printStackTrace()
-            }
-            addressText.setText("Address :\t $currentAddress")
-        } catch (e: java.lang.Exception) {
-        }
-    }
-
-    fun getAddress(llocation: Location): String? {
-        val geocoder: Geocoder
-        val addresses: List<Address>
-        var temp = ""
-        geocoder = Geocoder(this@MainActivity1, Locale.getDefault())
-        try {
-            addresses = geocoder.getFromLocation(llocation.latitude, llocation.longitude, 1)
-//            locality = addresses[0].subLocality
-//            area = addresses[0].subAdminArea
-            return if (addresses[0].getAddressLine(1) != null) {
-                addresses[0].getAddressLine(0)
-            } else {
-                if (addresses[0].subLocality != null) {
-                    temp = temp + " " + addresses[0].subLocality
-                    if (addresses[0].locality != null) {
-                        temp = temp + " ," + addresses[0].locality
-                        if (addresses[0].postalCode != null) {
-                            temp = temp + " ," + addresses[0].postalCode
-                        }
                     }
-                } else if (addresses[0].locality != null) {
-                    temp = temp + " " + addresses[0].locality
-                    if (addresses[0].postalCode != null) {
-                        temp = temp + " ," + addresses[0].postalCode
+
+                    override fun onCompleted() {
                     }
-                } else {
-                    temp = temp + " " + addresses[0].postalCode
-                }
-                temp
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        return ""
+
+                });
     }
 
 
@@ -344,7 +237,77 @@ class MainActivity1 : AppCompatActivity() {
         if (::mServiceIntent.isInitialized) {
             stopService(mServiceIntent)
         }
+//        MyApplication.getRefWatcher().watch(presenter);
         super.onDestroy()
+    }
+
+    override fun onLocationSettingsUnsuccessful() {
+        TODO("Not yet implemented")
+    }
+
+    // View Interface
+
+    override fun onLocationUpdate(location: Location) {
+        val dateFormatter: DateFormat = SimpleDateFormat("yyyy-MM-dd hh:mm:ss")
+        dateFormatter.setLenient(false)
+        val today = Date()
+        val s: String = dateFormatter.format(today)
+        lastUpdate.text = s
+        locationText.text = location.latitude.toString() + ", " + location.longitude
+        latitude = location.latitude.toString()
+        longitude = location.longitude.toString()
+    }
+
+    override fun onAddressUpdate(address: Address) {
+        addressText.setText(getAddressText(address))
+        fullAddress = getAddressText(address).toString()
+        area = address.subLocality
+        locality = address.locality
+        mLocationService = LocationService()
+        mServiceIntent = Intent(this, mLocationService.javaClass)
+        if (!Util.isMyServiceRunning(mLocationService.javaClass, mActivity)) {
+            startService(mServiceIntent)
+        }
+    }
+
+    private fun getAddressText(address: Address): String? {
+        var addressText: String? = ""
+        val maxAddressLineIndex = address.maxAddressLineIndex
+        for (i in 0..maxAddressLineIndex) {
+            addressText += address.getAddressLine(i)
+            if (i != maxAddressLineIndex) {
+                addressText += "\n"
+            }
+        }
+        return addressText
+    }
+
+    override fun onResume() {
+        checkPlayServicesAvailable()
+        mLocationService = LocationService()
+        mServiceIntent = Intent(this, mLocationService.javaClass)
+        if (!Util.isMyServiceRunning(mLocationService.javaClass, mActivity)) {
+            startService(mServiceIntent)
+        }
+        super.onResume()
+    }
+
+    private fun checkPlayServicesAvailable() {
+        val apiAvailability = GoogleApiAvailability.getInstance()
+        val status = apiAvailability.isGooglePlayServicesAvailable(this)
+        if (status != ConnectionResult.SUCCESS) {
+            if (apiAvailability.isUserResolvableError(status)) {
+                apiAvailability.getErrorDialog(this, status, 1).show()
+            } else {
+                Snackbar.make(lastUpdate, "Google Play Services unavailable. This app will not work", Snackbar.LENGTH_INDEFINITE).show()
+            }
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        presenter!!.detachView();
+
     }
 
 
